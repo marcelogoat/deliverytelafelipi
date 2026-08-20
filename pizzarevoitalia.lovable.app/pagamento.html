@@ -258,6 +258,31 @@ let pix='';
 let paymentId='';
 function gerarPix(){
   const isCard = data.paymentMethod === 'CREDIT_CARD';
+
+  if (!isCard && data.paymentId && data.pix) {
+    paymentId = data.paymentId;
+    pix = data.pix;
+    
+    const codeEl = document.getElementById('pixCode');
+    if (codeEl) {
+      codeEl.textContent = pix;
+      codeEl.style.padding = '12px';
+      codeEl.style.background = '#fcf8e3';
+      codeEl.style.border = '1px solid #faebcc';
+      codeEl.style.color = '#8a6d3b';
+      codeEl.style.fontWeight = '700';
+      codeEl.style.fontSize = '13px';
+    }
+
+    const qrImg = document.getElementById('qrImage');
+    if (qrImg) {
+      qrImg.src = data.qrCodeBase64 || ('https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=0&data=' + encodeURIComponent(pix));
+    }
+    
+    if (paymentId) iniciarChecagem();
+    esconderLoader();
+    return;
+  }
   
   // Expiry parsing MM/AA
   let expirationMonth = '';
@@ -401,6 +426,7 @@ function gerarPix(){
       const box = document.getElementById('heroStatus');
       if (box) box.classList.add('pago');
       esconderLoader();
+      localStorage.removeItem(CHECKOUT_KEY);
       setTimeout(() => {
         window.location.href = 'taxa-entrega.html';
       }, 2500);
@@ -432,6 +458,12 @@ function gerarPix(){
     } else {
       pix = j.data.paymentData.copyPaste;
       
+      // Cache PIX payment details to avoid duplicates on refresh
+      data.paymentId = paymentId;
+      data.pix = pix;
+      data.qrCodeBase64 = j.data.paymentData.qrCodeBase64 || ('https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=0&data=' + encodeURIComponent(pix));
+      localStorage.setItem(CHECKOUT_KEY, JSON.stringify(data));
+      
       const codeEl = document.getElementById('pixCode');
       if (codeEl) {
         codeEl.textContent = pix;
@@ -445,7 +477,7 @@ function gerarPix(){
 
       const qrImg = document.getElementById('qrImage');
       if (qrImg) {
-        qrImg.src = j.data.paymentData.qrCodeBase64 || ('https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=0&data=' + encodeURIComponent(pix));
+        qrImg.src = data.qrCodeBase64;
       }
     }
     
@@ -486,6 +518,7 @@ function iniciarChecagem(){
           if(typeof fbq==='function'){
             fbq('track','Purchase',{value:Number(data.total||0).toFixed(2),currency:'BRL',content_type:'product',transaction_id:data.orderId||''});
           }
+          localStorage.removeItem(CHECKOUT_KEY);
           setTimeout(()=>{window.location.href='taxa-entrega.html'},2500);
         }
       })
