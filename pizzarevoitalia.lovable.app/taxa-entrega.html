@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pedido Confirmado | Pizzaria Italia</title>
+  <title>Acompanhar Entrega | Pizzaria Italia</title>
   <link rel="stylesheet" href="css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
   <style>
@@ -12,12 +12,19 @@
     .topbar{background:linear-gradient(135deg,#006437 0%,#00522d 100%);height:62px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 14px rgba(0,100,55,.28);position:sticky;top:0;z-index:200}
     .topbar-title{color:#fff;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px}
     .container{max-width:480px;margin:0 auto;padding:24px 16px;text-align:center}
+    
     .success-card{background:#fff;border-radius:20px;padding:30px 20px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:20px}
     .success-icon{width:72px;height:72px;background:#dcfce7;color:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px}
+    
     h1{font-size:22px;font-weight:900;color:#006437;margin-bottom:12px}
     p{font-size:14px;color:#4b5563;line-height:1.6;margin-bottom:24px}
     
-    .timeline{text-align:left;margin-top:20px;padding:10px 10px 10px 20px;border-left:2px solid #e5e7eb;position:relative;margin-bottom:24px}
+    /* Timer styling */
+    .timer-box{background:#f3f4f6;border-radius:12px;padding:12px;margin-bottom:20px;border:1px solid #e5e7eb}
+    .timer-title{font-size:12px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.5px}
+    .timer-countdown{font-size:26px;font-weight:900;color:#111827;margin-top:4px}
+    
+    .timeline{text-align:left;margin-top:20px;padding:10px 10px 10px 20px;border-left:2px solid #e5e7eb;position:relative}
     .timeline-item{position:relative;margin-bottom:24px}
     .timeline-item:last-child{margin-bottom:0}
     .timeline-item::before{content:'';position:absolute;left:-26px;top:2px;width:10px;height:10px;border-radius:50%;background:#d1d5db;border:2px solid #fff}
@@ -26,39 +33,161 @@
     .timeline-title{font-size:14px;font-weight:800;color:#1f2937}
     .timeline-desc{font-size:12px;color:#6b7280;margin-top:2px}
     
-    .btn-wpp{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;background:#25d366;color:#fff;border:none;border-radius:14px;font-weight:900;font-size:15px;text-decoration:none;box-shadow:0 6px 18px rgba(37,211,102,.28);transition:.2s}
-    .btn-wpp:active{transform:scale(.98)}
     .btn-home{display:inline-block;margin-top:16px;color:#6b7280;font-size:13px;font-weight:700;text-decoration:none}
+    
+    /* Warning UI block when delivery fails */
+    .warning-card{background:#fff;border-radius:20px;padding:30px 20px;box-shadow:0 4px 20px rgba(0,0,0,.08);margin-bottom:20px;border:2px solid #fee2e2;text-align:left;display:none}
+    .warning-header{display:flex;align-items:center;gap:12px;color:#dc2626;margin-bottom:16px}
+    .warning-header i{font-size:28px}
+    .warning-header h2{font-size:18px;font-weight:900;text-transform:uppercase}
+    .warning-body{font-size:14px;color:#7f1d1d;line-height:1.6;margin-bottom:20px;background:#fef2f2;padding:16px;border-radius:12px;border:1px solid #fee2e2}
+    
+    .fee-box{background:#f9fafb;padding:16px;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+    .fee-label{font-size:13px;color:#4b5563;font-weight:600}
+    .fee-value{font-size:18px;font-weight:900;color:#dc2626}
+    
+    .btn-pay-fee{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;background:linear-gradient(135deg,#dc2626 0%,#b91c1c 100%);color:#fff;border:none;border-radius:14px;font-weight:900;font-size:15px;text-decoration:none;box-shadow:0 6px 18px rgba(220,38,38,.28);cursor:pointer;transition:.2s;text-transform:uppercase}
+    .btn-pay-fee:active{transform:scale(.98)}
+    
+    @keyframes pulse-warning {
+      0% { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+      100% { box-shadow: 0 4px 20px rgba(220,38,38,.2); border-color:#fca5a5; }
+    }
+    .warning-card.active{display:block;animation:pulse-warning 1s infinite alternate}
   </style>
 </head>
 <body>
 <header class="topbar">
-  <div class="topbar-title"><i class="fas fa-check-circle"></i> Pizzaria Italia</div>
+  <div class="topbar-title"><i class="fas fa-pizza-slice"></i> Pizzaria Italia</div>
 </header>
 
 <div class="container">
-  <div class="success-card">
-    <div class="success-icon"><i class="fas fa-pizza-slice"></i></div>
-    <h1>Pedido Confirmado!</h1>
-    <p>Seu pagamento via PIX foi confirmado com sucesso. O pedido já foi encaminhado para a nossa cozinha e em breve estará saindo para entrega.</p>
+  <!-- Active Tracking Block -->
+  <div id="trackingBlock" class="success-card">
+    <div class="success-icon"><i class="fas fa-motorcycle"></i></div>
+    <h1>Acompanhando seu pedido</h1>
+    <p>Seu pagamento via PIX foi confirmado com sucesso. O pedido já foi encaminhado para a cozinha.</p>
+    
+    <div class="timer-box">
+      <div class="timer-title">Previsão de entrega</div>
+      <div id="countdown" class="timer-countdown">24:00</div>
+    </div>
     
     <div class="timeline">
       <div class="timeline-item done">
-        <div class="timeline-title">Pagamento Aprovado</div>
-        <div class="timeline-desc">PIX recebido e validado com sucesso.</div>
+        <div class="timeline-title">Pagamento Confirmado</div>
+        <div class="timeline-desc">PIX aprovado com sucesso.</div>
       </div>
       <div class="timeline-item active">
-        <div class="timeline-title">Preparando seu Pedido</div>
-        <div class="timeline-desc">Nossos pizzaiolos já estão montando e assando sua pizza.</div>
+        <div class="timeline-title">Em Preparação</div>
+        <div class="timeline-desc">Nossos pizzaiolos já estão assando e montando sua pizza.</div>
       </div>
       <div class="timeline-item">
-        <div class="timeline-title">A caminho da sua casa</div>
-        <div class="timeline-desc">Tempo estimado de entrega: 20 a 35 minutos.</div>
+        <div class="timeline-title">A caminho da sua residência</div>
+        <div class="timeline-desc">O motoboy sairá em breve para entrega.</div>
       </div>
     </div>
   </div>
 
+  <!-- Unsuccessful Delivery Warning Block -->
+  <div id="warningBlock" class="warning-card">
+    <div class="warning-header">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h2>Entrega Não Concluída</h2>
+    </div>
+    <div class="warning-body">
+      Atenção: Nosso motoboy chegou ao seu endereço para realizar a entrega, porém não obteve resposta no interfone e não foi atendido após 3 tentativas de ligação telefônica. Conforme o protocolo de entregas noturnas da pizzaria (para evitar que a pizza esfrie e garantir a segurança do profissional), seu pedido retornou para a nossa central de distribuição.
+    </div>
+    
+    <div class="fee-box">
+      <div class="fee-label">Taxa de Reentrega</div>
+      <div class="fee-value">R$ 19,40</div>
+    </div>
+    
+    <button onclick="pagarReentrega()" class="btn-pay-fee">
+      <i class="fab fa-pix"></i> Pagar Taxa de Reentrega (R$ 19,40)
+    </button>
+  </div>
+
   <a href="home.html" class="btn-home"><i class="fas fa-arrow-left"></i> Voltar para a página inicial</a>
 </div>
+
+<script>
+  // Read confirmed time or default to now (allows direct page testing)
+  let confirmedAt = localStorage.getItem('pizza_delivery_confirmed_at');
+  if (!confirmedAt) {
+    confirmedAt = Date.now().toString();
+    localStorage.setItem('pizza_delivery_confirmed_at', confirmedAt);
+  }
+  
+  const totalSeconds = 24 * 60; // 24 minutes in seconds
+  
+  // Check for test mode in query params (?test=true makes 1 second = 1 minute for quick testing)
+  const urlParams = new URLSearchParams(window.location.search);
+  const isTest = urlParams.get('test') === 'true';
+
+  function updateTimer() {
+    const start = parseInt(confirmedAt, 10);
+    const now = Date.now();
+    let secondsElapsed = Math.floor((now - start) / 1000);
+    
+    if (isTest) {
+      // In test mode, 1 real second = 1 minute elapsed
+      secondsElapsed = secondsElapsed * 60;
+    }
+    
+    const secondsRemaining = totalSeconds - secondsElapsed;
+    
+    if (secondsRemaining <= 0) {
+      // Show delivery failed warning screen
+      document.getElementById('trackingBlock').style.display = 'none';
+      document.getElementById('warningBlock').classList.add('active');
+      document.getElementById('countdown').textContent = '00:00';
+      return;
+    }
+    
+    const mins = Math.floor(secondsRemaining / 60);
+    const secs = secondsRemaining % 60;
+    const format = (v) => String(v).padStart(2, '0');
+    
+    document.getElementById('countdown').textContent = `${format(mins)}:${format(secs)}`;
+    setTimeout(updateTimer, 1000);
+  }
+  
+  updateTimer();
+  
+  function pagarReentrega() {
+    // Generate checkout payload for the R$ 19,40 re-delivery fee
+    const reentregaData = {
+      orderId: 'REENTREGA-' + Date.now(),
+      total: 19.40,
+      nome: localStorage.getItem('pizza_delivery_nome') || 'Cliente',
+      telefone: localStorage.getItem('pizza_delivery_telefone') || '',
+      paymentMethod: 'PIX',
+      items: [
+        {
+          plan: 'Taxa de Reentrega',
+          total: 19.40,
+          qty: 1
+        }
+      ]
+    };
+    
+    // Copy address from last order if exists
+    try {
+      const addr = JSON.parse(localStorage.getItem('pizza_delivery_endereco') || '{}');
+      Object.assign(reentregaData, addr);
+    } catch(e) {}
+    
+    // Set to local storage to be read by pagamento.html
+    localStorage.setItem('pizza_checkout_v1', JSON.stringify(reentregaData));
+    
+    // Clear delivery confirmation state to prevent loops
+    localStorage.removeItem('pizza_delivery_confirmed_at');
+    
+    // Redirect to pagamento.html to process the 19.40 PIX payment
+    window.location.href = 'pagamento.html';
+  }
+</script>
 </body>
 </html>

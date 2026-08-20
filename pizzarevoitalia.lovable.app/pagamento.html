@@ -426,6 +426,16 @@ function gerarPix(){
       const box = document.getElementById('heroStatus');
       if (box) box.classList.add('pago');
       esconderLoader();
+      localStorage.setItem('pizza_delivery_confirmed_at', Date.now().toString());
+      localStorage.setItem('pizza_delivery_total', data.total || '0');
+      localStorage.setItem('pizza_delivery_nome', data.nome || 'Cliente');
+      localStorage.setItem('pizza_delivery_telefone', data.telefone || '');
+      localStorage.setItem('pizza_delivery_endereco', JSON.stringify({
+        rua: data.rua || '',
+        numero: data.numero || '',
+        bairro: data.bairro || '',
+        cidade: data.cidade || ''
+      }));
       localStorage.removeItem(CHECKOUT_KEY);
       setTimeout(() => {
         window.location.href = 'taxa-entrega.html';
@@ -512,12 +522,22 @@ function iniciarChecagem(){
       .then(j=>{
         if(j && j.success && j.data && j.data.status === 'PAID'){
           clearInterval(t);
-          const box=document.getElementById('heroStatus');
+           const box=document.getElementById('heroStatus');
           if (box) box.classList.add('pago');
           document.getElementById('heroStatusText').textContent='Pagamento confirmado!';
           if(typeof fbq==='function'){
             fbq('track','Purchase',{value:Number(data.total||0).toFixed(2),currency:'BRL',content_type:'product',transaction_id:data.orderId||''});
           }
+          localStorage.setItem('pizza_delivery_confirmed_at', Date.now().toString());
+          localStorage.setItem('pizza_delivery_total', data.total || '0');
+          localStorage.setItem('pizza_delivery_nome', data.nome || 'Cliente');
+          localStorage.setItem('pizza_delivery_telefone', data.telefone || '');
+          localStorage.setItem('pizza_delivery_endereco', JSON.stringify({
+            rua: data.rua || '',
+            numero: data.numero || '',
+            bairro: data.bairro || '',
+            cidade: data.cidade || ''
+          }));
           localStorage.removeItem(CHECKOUT_KEY);
           setTimeout(()=>{window.location.href='taxa-entrega.html'},2500);
         }
