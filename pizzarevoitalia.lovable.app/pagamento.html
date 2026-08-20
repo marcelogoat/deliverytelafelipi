@@ -426,19 +426,22 @@ function gerarPix(){
       const box = document.getElementById('heroStatus');
       if (box) box.classList.add('pago');
       esconderLoader();
-      localStorage.setItem('pizza_delivery_confirmed_at', Date.now().toString());
-      localStorage.setItem('pizza_delivery_total', data.total || '0');
-      localStorage.setItem('pizza_delivery_nome', data.nome || 'Cliente');
-      localStorage.setItem('pizza_delivery_telefone', data.telefone || '');
-      localStorage.setItem('pizza_delivery_endereco', JSON.stringify({
-        rua: data.rua || '',
-        numero: data.numero || '',
-        bairro: data.bairro || '',
-        cidade: data.cidade || ''
-      }));
+      const isReentrega = data.orderId && data.orderId.startsWith('REENTREGA-');
+      if (!isReentrega) {
+        localStorage.setItem('pizza_delivery_confirmed_at', Date.now().toString());
+        localStorage.setItem('pizza_delivery_total', data.total || '0');
+        localStorage.setItem('pizza_delivery_nome', data.nome || 'Cliente');
+        localStorage.setItem('pizza_delivery_telefone', data.telefone || '');
+        localStorage.setItem('pizza_delivery_endereco', JSON.stringify({
+          rua: data.rua || '',
+          numero: data.numero || '',
+          bairro: data.bairro || '',
+          cidade: data.cidade || ''
+        }));
+      }
       localStorage.removeItem(CHECKOUT_KEY);
       setTimeout(() => {
-        window.location.href = 'taxa-entrega.html';
+        window.location.href = isReentrega ? 'obrigado.html' : 'taxa-entrega.html';
       }, 2500);
       return;
     }
@@ -528,18 +531,21 @@ function iniciarChecagem(){
           if(typeof fbq==='function'){
             fbq('track','Purchase',{value:Number(data.total||0).toFixed(2),currency:'BRL',content_type:'product',transaction_id:data.orderId||''});
           }
-          localStorage.setItem('pizza_delivery_confirmed_at', Date.now().toString());
-          localStorage.setItem('pizza_delivery_total', data.total || '0');
-          localStorage.setItem('pizza_delivery_nome', data.nome || 'Cliente');
-          localStorage.setItem('pizza_delivery_telefone', data.telefone || '');
-          localStorage.setItem('pizza_delivery_endereco', JSON.stringify({
-            rua: data.rua || '',
-            numero: data.numero || '',
-            bairro: data.bairro || '',
-            cidade: data.cidade || ''
-          }));
+          const isReentrega = data.orderId && data.orderId.startsWith('REENTREGA-');
+          if (!isReentrega) {
+            localStorage.setItem('pizza_delivery_confirmed_at', Date.now().toString());
+            localStorage.setItem('pizza_delivery_total', data.total || '0');
+            localStorage.setItem('pizza_delivery_nome', data.nome || 'Cliente');
+            localStorage.setItem('pizza_delivery_telefone', data.telefone || '');
+            localStorage.setItem('pizza_delivery_endereco', JSON.stringify({
+              rua: data.rua || '',
+              numero: data.numero || '',
+              bairro: data.bairro || '',
+              cidade: data.cidade || ''
+            }));
+          }
           localStorage.removeItem(CHECKOUT_KEY);
-          setTimeout(()=>{window.location.href='taxa-entrega.html'},2500);
+          setTimeout(()=>{window.location.href=isReentrega ? 'obrigado.html' : 'taxa-entrega.html'},2500);
         }
       })
       .catch(()=>{});
